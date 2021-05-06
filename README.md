@@ -1,18 +1,8 @@
 # Gamedia
-A starter repo for building CUNY Tech Prep projects with React, Express.js, and Sequelize.js
+Social media site for gamers built using React, Express.js, and Sequelize.js
 
 ## Stack
 
-*API*
-
-- express.js
-- sequelize.js
-
-*React client*
-
-- Built using `create-react-app` and configured to work with the api.
-- Bootstrap 4.x added to `/client/public/index.html`
-- React Router
 
 *Project Structure*
 

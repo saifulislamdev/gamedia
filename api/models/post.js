@@ -1,4 +1,4 @@
-// const pool = require('./index.js');
+const pool = require('./index.js');
 
 
 // commented is from project-starter (not used in our app)

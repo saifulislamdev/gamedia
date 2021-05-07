@@ -22,7 +22,6 @@ const pool = new pg.Pool({
 pool.query('SELECT NOW()', (err, res) => {
   if (err) console.log(err);
   else console.log(res.rows);
-  pool.end();
 });
 
 // let sequelize;

@@ -8,7 +8,8 @@ const user = 'CREATE TABLE IF NOT EXISTS Login (\
                 Password VARCHAR(255), \
                 Email VARCHAR(255) UNIQUE, \
                 FirstName VARCHAR(255), \
-                LastName VARCHAR(255));';
+                LastName VARCHAR(255), \
+                Status BOOLEAN);';
 const post = 'CREATE TABLE IF NOT EXISTS Post (\
                 Id INT PRIMARY KEY, \
                 Username VARCHAR(255), \

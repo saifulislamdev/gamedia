@@ -2,7 +2,7 @@
   "development": {
     "username": "ctp_user",
     "password": "ctp_pass",
-    "database": "gamedia",
+    "database": "Gamedia",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },

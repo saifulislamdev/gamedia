@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const pool = require('./index.js');
 
-function createLogin(username, password, email, firstName, lastName, pool) {
+exports.createLogin = (username, password, email, firstName, lastName, pool) => {
     /* 
     Purpose: Creates login for a new user
     Input:
@@ -39,7 +39,7 @@ function createLogin(username, password, email, firstName, lastName, pool) {
             },
             function execute(verification) {
                 if (!verification) return;
-                const sql = 'INSERT INTO Login VALUES($1, $2, $3, $4, $5, true)';
+                const sql = 'INSERT INTO Login VALUES($1, $2, $3, $4, $5)';
                 pool.query(sql, [username, password, email, firstName, lastName], (err, res) => {
                     return err ? resolve([false, err]) : resolve([true]);
                 });
@@ -48,7 +48,7 @@ function createLogin(username, password, email, firstName, lastName, pool) {
     });
 }
 
-function getAccountInfo(username, pool) {
+exports.getAccountInfo = (username, pool) => {
     /* 
     Purpose: Show user their account info when they visit their personal page
     Input:
@@ -69,7 +69,7 @@ function getAccountInfo(username, pool) {
     });
 }
 
-function verifyLogin(username, password, pool) {
+exports.verifyLogin = (username, password, pool) => {
     /* 
     Purpose: Verifies that a login exists (for sign-in)
     Input:

@@ -117,6 +117,12 @@ exports.getPublicPosts = (pool) => {
     });
 }
 
+function getFeed(username, pool) { // TODO: not needed for now but nice to have
+    /*
+    Purpose: Get the feed a user sees which contains posts from their following (for their homepage)
+    */
+}
+
 exports.viewPost = (id, username, pool) => {
     /* 
     Purpose: Gets post if the user has proper viewing privileges

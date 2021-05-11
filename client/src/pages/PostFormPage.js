@@ -55,11 +55,11 @@ class PostFormPage extends React.Component {
     }
 
     return (
-      <div className="col-10 col-md-8 col-lg-7">
+      <div className="col-8 col-md-6 col-lg-5">
         { errorMessage }
         <div className="input-group">
           <input 
-            type="text" 
+            type="text, images" 
             placeholder="Add your words of wisdom here..." 
             value={this.state.content}
             className="form-control mr-3 rounded"

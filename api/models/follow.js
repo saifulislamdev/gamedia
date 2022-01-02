@@ -1,7 +1,7 @@
 const async = require('async');
 const express = require('express');
-const app = express();
-const pool = require('./index.js');
+// const app = express();
+// const pool = require('./index.js');
 
 exports.follow = (follower, following, pool) => {
     /* 
@@ -306,5 +306,3 @@ exports.unfollow = (follower, following, pool) => {
 // unfollow('saifulislam', 'ronnycoste', pool).then(result => console.log(result));
 // unfollow('saifulisla', 'ctp', pool).then(result => console.log(result));
 // unfollow('ronnycoste', 'ctp', pool).then(result => console.log(result));
-
-app.listen(3005, () => console.log('Listening on 3005'));

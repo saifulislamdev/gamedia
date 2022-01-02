@@ -1,7 +1,4 @@
 const async = require('async');
-const express = require('express');
-const app = express();
-const pool = require('./index.js');
 
 exports.createLogin = (username, password, email, firstName, lastName, pool) => {
     /* 
@@ -117,6 +114,3 @@ function deactivateLogin() { } // TODO: not needed for now but nice to have
 // verifyLogin('saifulislam', 'ronnyisacool', pool).then(result => console.log(result));
 // verifyLogin('saiful', 'ronnyisacoolguy', pool).then(result => console.log(result));
 // verifyLogin('saiful', 'ronnyisa', pool).then(result => console.log(result));
-
-
-app.listen(3003, () => console.log('Listening on 3003'));

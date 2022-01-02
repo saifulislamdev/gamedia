@@ -2,7 +2,7 @@
   "name": "api-backend",
   "version": "1.0.0",
   "description": "Gamedia API Backend",
-  "main": "index.js",
+  "main": "api/app.js",
   "scripts": {
     "start": "node api/app.js",
     "dev": "nodemon -r dotenv/config api/app.js",

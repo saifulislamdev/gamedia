@@ -1,11 +1,9 @@
 // This file is for setting up the database tables
 
-const express = require('express');
-const app = express();
 const pool = require('./index.js');
 
-// table creation statements
-// TODO: Saiful, add more constraints to columns
+// Table creation statements
+// TODO: Add more constraints to columns
 const login = 'CREATE TABLE IF NOT EXISTS Login (\
                 Username VARCHAR(255) PRIMARY KEY, \
                 Password VARCHAR(255) NOT NULL, \
@@ -56,5 +54,3 @@ function deleteTables() {
 
 // delete tables for app (uncomment when using, otherwise, remains commented)
 // deleteTables();
-
-app.listen(3002, () => console.log('Listening on 3002'));

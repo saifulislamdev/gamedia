@@ -1,9 +1,4 @@
 const async = require('async');
-const express = require('express');
-const app = express();
-const pool = require('./index.js');
-
-// TODO: Saiful, test all functions here
 
 exports.createPost = (username, serverLink, caption, private, pool) => {
     /* 
@@ -22,33 +17,44 @@ exports.createPost = (username, serverLink, caption, private, pool) => {
         If there is an error, returns false with the message in an array (i.e. [false, 'Error message here']).
     */
     return new Promise((resolve, reject) => {
-        if (typeof serverLink !== 'string' || serverLink.length === 0) return resolve([false, 'Provide a server link']);
-        if (typeof caption !== 'string') return resolve([false, 'Caption must be of string type']);
+        if (typeof serverLink !== 'string' || serverLink.length === 0)
+            return resolve([false, 'Provide a server link']);
+        if (typeof caption !== 'string')
+            return resolve([false, 'Caption must be of string type']);
         async.waterfall([
-            function verifyUsername(callback) { 
-                const sql = 'SELECT Username FROM Login WHERE Username = $1 AND Status = true';
+            function verifyUsername(callback) {
+                const sql =
+                    'SELECT Username FROM Login WHERE Username = $1 AND Status = true';
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
-                        callback(null, false)
+                        callback(null, false);
                         return resolve([false, err]);
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([false, 'Username does not exist or may be deactivated']);
+                        return resolve([
+                            false,
+                            'Username does not exist or may be deactivated',
+                        ]);
                     }
                     callback(null, true);
                 });
             },
             function execute(verification) {
                 if (!verification) return;
-                const sql = 'INSERT INTO Post(Username, ServerLink, Caption, Private) VALUES($1, $2, $3, $4)';
-                pool.query(sql, [username, serverLink, caption, private], (err, res) => {
-                    return err ? resolve([false, err]) : resolve([true]);
-                });
-            }
+                const sql =
+                    'INSERT INTO Post(Username, ServerLink, Caption, Private) VALUES($1, $2, $3, $4)';
+                pool.query(
+                    sql,
+                    [username, serverLink, caption, private],
+                    (err, res) => {
+                        return err ? resolve([false, err]) : resolve([true]);
+                    }
+                );
+            },
         ]);
     });
-}
+};
 
 exports.getPostsFromUser = (username, pool) => {
     /* 
@@ -64,23 +70,29 @@ exports.getPostsFromUser = (username, pool) => {
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
-            function verifyUsername(callback) { // TODO: repetition
-                const sql = 'SELECT Username FROM Login WHERE Username = $1 AND Status = true';
+            function verifyUsername(callback) {
+                // TODO: repetition
+                const sql =
+                    'SELECT Username FROM Login WHERE Username = $1 AND Status = true';
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
-                        callback(null, false)
+                        callback(null, false);
                         return resolve([false, err]);
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([false, 'Username does not exist or may be deactivated']);
+                        return resolve([
+                            false,
+                            'Username does not exist or may be deactivated',
+                        ]);
                     }
                     callback(null, true);
                 });
             },
             function execute(verification) {
                 if (!verification) return;
-                const sql = 'SELECT Id, Username, ServerLink, Caption, UploadDate, Private \
+                const sql =
+                    'SELECT Id, Username, ServerLink, Caption, UploadDate, Private \
                                 FROM Post \
                                 WHERE Username = $1 AND Deleted = false \
                                 ORDER BY UploadDate DESC'; // TODO: might not want to return username as well
@@ -89,10 +101,10 @@ exports.getPostsFromUser = (username, pool) => {
                     if (res.rowCount === 0) return resolve([]);
                     return resolve(res.rows);
                 });
-            }
-        ])
+            },
+        ]);
     });
-}
+};
 
 exports.getPublicPosts = (pool) => {
     /* 
@@ -105,7 +117,8 @@ exports.getPublicPosts = (pool) => {
         If there is an error, returns false with the message in an array (i.e. [false, 'Error message here']).
     */
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT Id, Username, ServerLink, Caption, UploadDate, Private \
+        const sql =
+            'SELECT Id, Username, ServerLink, Caption, UploadDate, Private \
                         FROM Post \
                         WHERE Private = false AND Deleted = false \
                         ORDER BY UploadDate DESC'; // TODO: might not want to give Private
@@ -115,9 +128,10 @@ exports.getPublicPosts = (pool) => {
             return resolve([res.rows]);
         });
     });
-}
+};
 
-function getFeed(username, pool) { // TODO: not needed for now but nice to have
+function getFeed(username, pool) {
+    // TODO: not needed for now but nice to have
     /*
     Purpose: Get the feed a user sees which contains posts from their following (for their homepage)
     */
@@ -140,7 +154,8 @@ exports.viewPost = (id, username, pool) => {
     return new Promise((resolve, reject) => {
         async.waterfall([
             function verifyPost(callback) {
-                const sql = 'SELECT Id, Username, ServerLink, Caption, UploadDate, Private FROM Post WHERE Id = $1 AND Deleted = false';
+                const sql =
+                    'SELECT Id, Username, ServerLink, Caption, UploadDate, Private FROM Post WHERE Id = $1 AND Deleted = false';
                 pool.query(sql, [id], (err, res) => {
                     if (err) {
                         callback(null, false, '');
@@ -151,11 +166,12 @@ exports.viewPost = (id, username, pool) => {
                         return resolve([false, 'Post does not exist']);
                     }
                     callback(null, true, res.rows[0]);
-                })
+                });
             },
             function verifyUsername(verification, postInfo, callback) {
                 if (!verification) return;
-                const sql = 'SELECT Username FROM Login WHERE Username = $1 AND Status = true';
+                const sql =
+                    'SELECT Username FROM Login WHERE Username = $1 AND Status = true';
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false, '');
@@ -163,7 +179,10 @@ exports.viewPost = (id, username, pool) => {
                     }
                     if (res.rowCount === 0) {
                         callback(null, false, '');
-                        return resolve([false, 'Username does not exist or may be deactivated']);
+                        return resolve([
+                            false,
+                            'Username does not exist or may be deactivated',
+                        ]);
                     }
                     callback(null, true, postInfo);
                 });
@@ -178,7 +197,8 @@ exports.viewPost = (id, username, pool) => {
                     callback(null, true, postInfo);
                     return;
                 }
-                const sql = 'SELECT Status FROM Follow WHERE Follower = $1 AND Following = $2';
+                const sql =
+                    'SELECT Status FROM Follow WHERE Follower = $1 AND Following = $2';
                 pool.query(sql, [username, postInfo.username], (err, res) => {
                     if (err) {
                         callback(null, false, '');
@@ -186,20 +206,24 @@ exports.viewPost = (id, username, pool) => {
                     }
                     if (res.rowCount === 0 || res.rows[0].status === false) {
                         callback(null, false, '');
-                        return resolve([false, 'User not allowed to view post']);
+                        return resolve([
+                            false,
+                            'User not allowed to view post',
+                        ]);
                     }
                     callback(null, true, postInfo);
-                })
+                });
             },
             function execute(verification, postInfo) {
                 if (!verification) return;
                 return resolve([postInfo]);
-            }
+            },
         ]);
     });
-}
+};
 
-exports.setPostToPrivate = (id, username, pool) => { // TODO: two functions can be combined to one
+exports.setPostToPrivate = (id, username, pool) => {
+    // TODO: two functions can be combined to one
     /* 
     Purpose: User sets a post they previously made to private
     Input:
@@ -217,7 +241,8 @@ exports.setPostToPrivate = (id, username, pool) => { // TODO: two functions can 
     return new Promise((resolve, reject) => {
         async.waterfall([
             function verifyPost(callback) {
-                const sql = 'SELECT Id, Username, ServerLink, Caption, UploadDate, Private FROM Post WHERE Id = $1 AND Deleted = false';
+                const sql =
+                    'SELECT Id, Username, ServerLink, Caption, UploadDate, Private FROM Post WHERE Id = $1 AND Deleted = false';
                 pool.query(sql, [id], (err, res) => {
                     if (err) {
                         callback(null, false, '');
@@ -228,13 +253,17 @@ exports.setPostToPrivate = (id, username, pool) => { // TODO: two functions can 
                         return resolve([false, 'Post does not exist']);
                     }
                     callback(null, true, res.rows[0]);
-                })
+                });
             },
-            function verifyUserOfPost(verification, postInfo, callback) { // TODO: repetition here and in other functions
+            function verifyUserOfPost(verification, postInfo, callback) {
+                // TODO: repetition here and in other functions
                 if (!verification) return;
                 if (postInfo.username !== username) {
                     callback(null, false, '');
-                    return resolve([false, "User not allowed to modify someone else's post"]);
+                    return resolve([
+                        false,
+                        "User not allowed to modify someone else's post",
+                    ]);
                 }
                 callback(null, true, postInfo);
             },
@@ -248,12 +277,16 @@ exports.setPostToPrivate = (id, username, pool) => { // TODO: two functions can 
                     }
                     if (res.rows[0].status === false) {
                         callback(null, false, '');
-                        return resolve([false, "User's account is currently deactivated"]);
+                        return resolve([
+                            false,
+                            "User's account is currently deactivated",
+                        ]);
                     }
                     callback(null, true, postInfo);
                 });
             },
-            function verifyPublic(verification, postInfo, callback) { // TODO: repetition here and in other functions
+            function verifyPublic(verification, postInfo, callback) {
+                // TODO: repetition here and in other functions
                 if (!verification) return;
                 if (postInfo.private === true) {
                     callback(null, false);
@@ -267,10 +300,10 @@ exports.setPostToPrivate = (id, username, pool) => { // TODO: two functions can 
                 pool.query(sql, [id], (err, res) => {
                     return err ? resolve([false, err]) : resolve([true]);
                 });
-            }
+            },
         ]);
     });
-}
+};
 
 exports.setPostToPublic = (id, username, pool) => {
     /* 
@@ -289,7 +322,8 @@ exports.setPostToPublic = (id, username, pool) => {
     return new Promise((resolve, reject) => {
         async.waterfall([
             function verifyPost(callback) {
-                const sql = 'SELECT Id, Username, ServerLink, Caption, UploadDate, Private FROM Post WHERE Id = $1 AND Deleted = false';
+                const sql =
+                    'SELECT Id, Username, ServerLink, Caption, UploadDate, Private FROM Post WHERE Id = $1 AND Deleted = false';
                 pool.query(sql, [id], (err, res) => {
                     if (err) {
                         callback(null, false, '');
@@ -300,13 +334,16 @@ exports.setPostToPublic = (id, username, pool) => {
                         return resolve([false, 'Post does not exist']);
                     }
                     callback(null, true, res.rows[0]);
-                })
+                });
             },
             function verifyUserOfPost(verification, postInfo, callback) {
                 if (!verification) return;
                 if (postInfo.username !== username) {
                     callback(null, false, '');
-                    return resolve([false, "User not allowed to modify someone else's post"]);
+                    return resolve([
+                        false,
+                        "User not allowed to modify someone else's post",
+                    ]);
                 }
                 callback(null, true, postInfo);
             },
@@ -320,7 +357,10 @@ exports.setPostToPublic = (id, username, pool) => {
                     }
                     if (res.rows[0].status === false) {
                         callback(null, false, '');
-                        return resolve([false, "User's account is currently deactivated"]);
+                        return resolve([
+                            false,
+                            "User's account is currently deactivated",
+                        ]);
                     }
                     callback(null, true, postInfo);
                 });
@@ -339,43 +379,12 @@ exports.setPostToPublic = (id, username, pool) => {
                 pool.query(sql, [id], (err, res) => {
                     return err ? resolve([false, err]) : resolve([true]);
                 });
-            }
+            },
         ]);
     });
-}
+};
 
-function deletePost() { } // TODO: not needed for now but nice to have
-
-
-// commented is from project-starter (not used in our app)
-
-// 'use strict';
-// const { Model } = require('sequelize');
-
-
-// module.exports = (sequelize, DataTypes) => {
-//   class Post extends Model {}
-
-//   Post.init({
-//     content: {
-//       type: DataTypes.STRING,
-//       validate: {
-//         len: [3, 250],
-//         notEmpty: true,
-//       }
-//     },
-//   }, {
-//     sequelize,
-//     modelName: 'post'
-//   });
-
-//   Post.associate = (models) => {
-//     // associations can be defined here
-//   };
-
-//   return Post;
-// };
-
+function deletePost() {} // TODO: not needed for now but nice to have
 
 /* Testing */
 
@@ -422,5 +431,3 @@ function deletePost() { } // TODO: not needed for now but nice to have
 // setPostToPublic(1000, 'saifulislam', pool).then(result => console.log(result));
 // setPostToPublic(11, 'gamedia', pool).then(result => console.log(result));
 // setPostToPublic(20, 'ronnycoste', pool).then(result => console.log(result));
-
-app.listen(3004, () => console.log('Listening on 3004'));

@@ -1,9 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
-
+const dbPool = require('./models');
 const app = express();
-const PORT = process.env.PORT;
 
 // this lets us parse 'application/json' content in http requests
 app.use(express.json());
@@ -26,8 +25,15 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // start up the server
+const PORT = process.env.PORT;
 if (PORT) {
     app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 } else {
     console.log('===== ERROR ====\nCREATE A .env FILE!\n===== /ERROR ====');
 }
+
+// connect to DB
+dbPool.query('SELECT NOW()', (err, res) => {
+    if (err) console.log(err);
+    else console.log('Database connected');
+});

@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     const verifyLoginRes = await verifyLogin(username, password, dbPool);
 
     if (verifyLoginRes[0])
-        return res.status(201).json({ msg: verifyLoginRes[1] });
+        return res.status(200).json({ msg: verifyLoginRes[1] });
 
     res.status(400).json({ msg: verifyLoginRes[1] });
 });

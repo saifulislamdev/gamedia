@@ -6,7 +6,7 @@ const app = express();
 
 const follow = require('./follow');
 const login = require('./login');
-const pool = require('./index');
+const pool = require('./');
 const post = require('./post');
 
 async function seed() {

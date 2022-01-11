@@ -14,7 +14,7 @@ function createLogin(username, password, email, firstName, lastName, pool) {
         If there is no error, returns [true, 'Created successfully'].
         If username is already taken by a user, returns [false, 'Username already taken'].
         If email is already taken by a user, returns [false, 'Email already taken'].
-        If there is an error, returns false with the message in an array (i.e. [false, 'Error message here']).
+        If there is another error, returns [false, 'Internal server error'].
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -24,7 +24,7 @@ function createLogin(username, password, email, firstName, lastName, pool) {
                 pool.query(sql, [username, email], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, err]);
+                        return resolve([false, 'Internal server error']);
                     }
                     if (res.rowCount !== 0) {
                         const result = res.rows[0];
@@ -44,7 +44,7 @@ function createLogin(username, password, email, firstName, lastName, pool) {
                     [username, password, email, firstName, lastName],
                     (err, res) => {
                         return err
-                            ? resolve([false, err])
+                            ? resolve([false, 'Internal server error'])
                             : resolve([true, 'Created successfully']);
                     }
                 );
@@ -61,15 +61,15 @@ function verifyLogin(username, password, pool) {
         password: password of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is an error, returns false with the message in an array (i.e. [false, 'Error message here']).
-        If no such user exists, returns [false, 'Invalid credentials'].
         If the user exists, returns [true, 'Valid login'].
+        If no such user exists, returns [false, 'Invalid credentials'].
+        If there is another error, returns [false, 'Internal server error']).
     */
     return new Promise((resolve, reject) => {
         const sql =
             'SELECT Username, Password FROM Login WHERE Username = $1 AND Password = $2';
         pool.query(sql, [username, password], (err, res) => {
-            if (err) return resolve([false, err]);
+            if (err) return resolve([false, 'Internal server error']);
             if (res.rowCount === 0) return resolve([false, 'Invalid credentials']);
             return resolve([true, 'Valid login']);
         });

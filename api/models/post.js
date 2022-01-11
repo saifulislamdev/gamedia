@@ -14,7 +14,7 @@ function createPost(username, serverLink, caption, private, pool) {
         If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
         If serverLink is not of string type or is an empty string, returns [false, 'Provide a server link'].
         If caption is not of string type, returns [false, 'Caption must be of string type'].
-        If there is an error, returns false with the message in an array (i.e. [false, 'Internal server error']).
+        If there is another error, returns [false, 'Internal server error'].
     */
     return new Promise((resolve, reject) => {
         if (typeof serverLink !== 'string' || serverLink.length === 0)
@@ -68,7 +68,7 @@ function getPostsFromUser(username, pool) {
         If user has posts, returns information of each post as objects in an array (i.e. [{'nysaifulislam@gmail.com', 'Saiful', 'Islam'}]). // TODO: Saiful, change this
         If user has made no posts, returns [] (an empty array).
         If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If there is an error, returns false with the message in an array (i.e. [false, 'Internal server error']).
+        If there is another error, returns [false, 'Internal server error'].
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -151,7 +151,7 @@ function viewPost(id, username, pool) {
         If the user is not allowed to view the post due to privacy, returns [false, 'User not allowed to view post'].
         If the id does not match a post or post is deleted, returns [false, 'Post does not exist'].
         If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If there is an error, returns false with the message in an array (i.e. [false, 'Internal server error']).
+        If there is another error, returns [false, 'Internal server error'].
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -238,7 +238,7 @@ function setPostToPrivate(id, username, pool) {
         If username is not the owner of the post, returns [false, "User not allowed to modify another user's post"].
         If the id does not match a post or post is deleted, returns [false, 'Post does not exist'].
         If account associated with username is deactivated, returns [false, "User's account is currently deactivated"].
-        If there is an error, returns false with the message in an array (i.e. [false, 'Internal server error']).
+        If there is another error, returns [false, 'Internal server error'].
     */
     return new Promise((resolve, reject) => {
         async.waterfall([

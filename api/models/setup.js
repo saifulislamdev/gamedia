@@ -1,6 +1,6 @@
 // This file is for setting up the database tables
 
-const pool = require('./index.js');
+const pool = require('./');
 
 // Table creation statements
 // TODO: Add more constraints to columns

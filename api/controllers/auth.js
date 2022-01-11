@@ -1,26 +1,34 @@
 const express = require('express');
 const router = express.Router();
-const dbPool = require('../models');
 const { createLogin, verifyLogin } = require('../models/auth');
+const dbPool = require('../models');
 
 router.get('/', async (req, res) => {
     const { username, password } = req.body;
 
-    if (!username || !password)
-        return res.status(400).json({ msg: 'Fields not indicated' });
+    if (typeof username === 'undefined' || typeof password === 'undefined')
+        return res
+            .status(400)
+            .json({ msg: 'Username or password not indicated' });
 
     const verifyLoginRes = await verifyLogin(username, password, dbPool);
 
     if (verifyLoginRes[0])
-        return res.status(200).json({ msg: verifyLoginRes[1] });
+        return res.status(200).json({ msg: verifyLoginRes[1] }); // successful
 
-    res.status(400).json({ msg: verifyLoginRes[1] });
+    res.status(400).json({ msg: verifyLoginRes[1] }); // not successful
 });
 
 router.post('/', async (req, res) => {
     const { username, password, email, firstName, lastName } = req.body;
 
-    if (!username || !password || !email || !firstName || !lastName)
+    if (
+        typeof username === 'undefined' ||
+        typeof password === 'undefined' ||
+        typeof email === 'undefined' ||
+        typeof firstName === 'undefined' ||
+        typeof lastName === 'undefined'
+    )
         return res.status(400).json({ msg: 'Fields not indicated' });
 
     const createLoginRes = await createLogin(
@@ -33,9 +41,9 @@ router.post('/', async (req, res) => {
     );
 
     if (createLoginRes[0])
-        return res.status(201).json({ msg: createLoginRes[1] });
+        return res.status(201).json({ msg: createLoginRes[1] }); // successful
 
-    res.status(400).json({ msg: createLoginRes[1] });
+    res.status(400).json({ msg: createLoginRes[1] }); // not successful
 });
 
 module.exports = router;

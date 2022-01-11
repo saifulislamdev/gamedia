@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const dbPool = require('../models');
 const { getAccountInfo } = require('../models/user');
 const { getPostsFromUser } = require('../models/post');
+const dbPool = require('../models');
 
 router.get('/:username', async (req, res) => {
     const { username } = req.params;
     const getAccountInfoRes = await getAccountInfo(username, dbPool);
 
+    // no user
     if (!getAccountInfoRes)
-        return res.status(204).json({ msg: 'No information about user' });
-
-    if (!getAccountInfoRes[0])
-        return res.status(500).json({ msg: 'Error occurred in the server' });
-
-    res.status(200).json(getAccountInfoRes);
+        res.status(400).json({ msg: 'No user exists with matching username' });
+    // server error
+    else if (!getAccountInfoRes[0])
+        res.status(500).json({ msg: getAccountInfoRes[1] });
+    // successful
+    else res.status(200).json(getAccountInfoRes);
 });
 
 router.get('/:username/posts', async (req, res) => {

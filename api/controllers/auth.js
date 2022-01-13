@@ -7,16 +7,16 @@ router.get('/', async (req, res) => {
     const { username, password } = req.body;
 
     if (typeof username === 'undefined' || typeof password === 'undefined')
-        return res
-            .status(400)
-            .json({ msg: 'Username or password not indicated' });
+        return res.status(400).json({
+            msg: 'Username or password not indicated',
+        });
 
     const verifyLoginRes = await verifyLogin(username, password, dbPool);
 
-    if (verifyLoginRes[0])
-        return res.status(200).json({ msg: verifyLoginRes[1] }); // successful
+    if (verifyLoginRes.success)
+        return res.status(200).json({ msg: verifyLoginRes.msg }); // successful
 
-    res.status(400).json({ msg: verifyLoginRes[1] }); // not successful
+    res.status(400).json({ msg: verifyLoginRes.msg }); // not successful
 });
 
 router.post('/', async (req, res) => {
@@ -40,10 +40,10 @@ router.post('/', async (req, res) => {
         dbPool
     );
 
-    if (createLoginRes[0])
-        return res.status(201).json({ msg: createLoginRes[1] }); // successful
+    if (createLoginRes.success)
+        return res.status(201).json({ msg: createLoginRes.msg }); // successful
 
-    res.status(400).json({ msg: createLoginRes[1] }); // not successful
+    res.status(400).json({ msg: createLoginRes.msg }); // not successful
 });
 
 module.exports = router;

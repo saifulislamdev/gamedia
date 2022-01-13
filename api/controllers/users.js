@@ -9,13 +9,17 @@ router.get('/:username', async (req, res) => {
     const getAccountInfoRes = await getAccountInfo(username, dbPool);
 
     // no user
-    if (!getAccountInfoRes)
-        res.status(400).json({ msg: 'No user exists with matching username' });
+    if (getAccountInfoRes.msg === 'No such user exists')
+        res.status(400).json({
+            msg: getAccountInfoRes.msg,
+        });
     // server error
-    else if (!getAccountInfoRes[0])
-        res.status(500).json({ msg: getAccountInfoRes[1] });
+    else if (getAccountInfoRes.msg === 'Internal server error')
+        res.status(500).json({
+            msg: getAccountInfoRes.msg,
+        });
     // successful
-    else res.status(200).json(getAccountInfoRes);
+    else res.status(200).json({ accountInfo: getAccountInfoRes.accountInfo });
 });
 
 router.get('/:username/posts', async (req, res) => {
@@ -23,13 +27,18 @@ router.get('/:username/posts', async (req, res) => {
     const getPostsFromUserRes = await getPostsFromUser(username, dbPool);
 
     // username exists (posts or no posts available)
-    if (getPostsFromUserRes[0] || getPostsFromUserRes.length === 0)
-        res.status(200).json(getPostsFromUserRes);
+    if (getPostsFromUserRes.success)
+        res.status(200).json({ posts: getPostsFromUserRes.posts });
     // server error
-    else if (getPostsFromUserRes[1] === 'Internal server error')
-        res.status(500).json({ msg: getPostsFromUserRes });
+    else if (getPostsFromUserRes.msg === 'Internal server error')
+        res.status(500).json({
+            msg: getPostsFromUserRes.msg,
+        });
     // client error (no corresponding username)
-    else res.status(400).json({ msg: getPostsFromUserRes[1] });
+    else
+        res.status(400).json({
+            msg: getPostsFromUserRes.msg,
+        });
 });
 
 module.exports = router;

@@ -13,9 +13,12 @@ router.get('/', async (req, res) => {
     const getPublicPostsRes = await getPublicPosts(dbPool);
 
     // no posts or posts exist
-    if (getPublicPostsRes.length === 0 || getPublicPostsRes[0])
-        res.status(200).json(getPublicPostsRes);
-    else res.status(500).json({ msg: 'Internal server error' });
+    if (getPublicPostsRes.success)
+        res.status(200).json({ posts: getPublicPostsRes.posts });
+    else
+        res.status(500).json({
+            msg: getPublicPostsRes.msg,
+        });
 });
 
 router.post('/', async (req, res) => {
@@ -46,12 +49,12 @@ router.post('/', async (req, res) => {
     );
 
     // successful
-    if (createPostRes[0]) res.status(201).json({ msg: 'Post created' });
+    if (createPostRes.success) res.status(201).json({ msg: createPostRes.msg });
     // server error
-    else if (createPostRes[1] === 'Internal server error')
-        res.status(500).json({ msg: createPostRes[1] });
+    else if (createPostRes.msg === 'Internal server error')
+        res.status(500).json({ msg: createPostRes.msg });
     // client errors
-    else res.status(400).json({ msg: createPostRes[1] });
+    else res.status(400).json({ msg: createPostRes.msg });
 });
 
 router.get('/:id', async (req, res) => {
@@ -67,15 +70,15 @@ router.get('/:id', async (req, res) => {
     const viewPostRes = await viewPost(Number(id), username, dbPool);
 
     // successful
-    if (viewPostRes[0]) res.status(200).json(viewPostRes);
+    if (viewPostRes.success) res.status(200).json({ post: viewPostRes.post });
     // not authorized
-    else if (viewPostRes[1] === 'User not allowed to view post')
-        res.status(401).json({ msg: viewPostRes[1] });
+    else if (viewPostRes.msg === 'User not allowed to view post')
+        res.status(401).json({ msg: viewPostRes.msg });
     // server error
-    else if (viewPostRes[1] === 'Internal server error')
-        res.status(500).json({ msg: viewPostRes[1] });
+    else if (viewPostRes.msg === 'Internal server error')
+        res.status(500).json({ msg: viewPostRes.msg });
     // client error
-    else res.status(400).json(viewPostRes[1]);
+    else res.status(400).json({ msg: viewPostRes.msg });
 });
 
 router.put('/:id', async (req, res) => {
@@ -103,19 +106,19 @@ router.put('/:id', async (req, res) => {
         );
 
         // successful
-        if (setPostToPrivateRes[0])
-            res.status(200).json({ msg: 'Privacy updated to private' });
+        if (setPostToPrivateRes.success)
+            res.status(200).json({ msg: setPostToPrivate.msg });
         // not authorized
         else if (
-            setPostToPrivateRes[1] ===
+            setPostToPrivateRes.msg ===
             "User not allowed to modify another user's post"
         )
-            res.status(401).json({ msg: setPostToPrivateRes[1] });
+            res.status(401).json({ msg: setPostToPrivateRes.msg });
         // server error
-        else if (setPostToPrivateRes[1] === 'Internal server error')
-            res.status(500).json({ msg: setPostToPrivateRes[1] });
+        else if (setPostToPrivateRes.msg === 'Internal server error')
+            res.status(500).json({ msg: setPostToPrivateRes.msg });
         // client errors
-        else res.status(400).json({ msg: setPostToPrivateRes[1] });
+        else res.status(400).json({ msg: setPostToPrivateRes.msg });
     }
 
     // change to public post
@@ -127,19 +130,19 @@ router.put('/:id', async (req, res) => {
         );
 
         // successful
-        if (setPostToPublicRes[0])
-            res.status(200).json({ msg: 'Privacy updated to public' });
+        if (setPostToPublicRes.success)
+            res.status(200).json({ msg: setPostToPublicRes.msg });
         // not authorized
         else if (
-            setPostToPublicRes[1] ===
+            setPostToPublicRes.msg ===
             "User not allowed to modify another user's post"
         )
-            res.status(401).json({ msg: setPostToPublicRes[1] });
+            res.status(401).json({ msg: setPostToPublicRes.msg });
         // server error
-        else if (setPostToPublicRes[1] === 'Internal server error')
-            res.status(500).json({ msg: setPostToPublicRes[1] });
+        else if (setPostToPublicRes.msg === 'Internal server error')
+            res.status(500).json({ msg: setPostToPublicRes.msg });
         // client error
-        else res.status(400).json({ msg: setPostToPublicRes[1] });
+        else res.status(400).json({ msg: setPostToPublicRes.msg });
     }
 });
 

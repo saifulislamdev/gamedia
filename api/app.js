@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
 const dbPool = require('./models');
+
 const app = express();
 
 // this lets us parse 'application/json' content in http requests

@@ -10,17 +10,20 @@ function createPost(username, serverLink, caption, private, pool) {
         private: privacy of post (if truth value, post is private; if false value, post is public) [boolean]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns [true].
-        If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If serverLink is not of string type or is an empty string, returns [false, 'Provide a server link'].
-        If caption is not of string type, returns [false, 'Caption must be of string type'].
-        If there is another error, returns [false, 'Internal server error'].
+        If there is no error, returns { success: true, msg: 'Post created' }.
+        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }.
+        If serverLink is not of string type or is an empty string, returns { success: false, msg: 'Provide a server link' }.
+        If caption is not of string type, returns { success: false, msg: 'Caption must be of string type'}.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         if (typeof serverLink !== 'string' || serverLink.length === 0)
-            return resolve([false, 'Provide a server link']);
+            return resolve({ success: false, msg: 'Provide a server link' });
         if (typeof caption !== 'string')
-            return resolve([false, 'Caption must be of string type']);
+            return resolve({
+                success: false,
+                msg: 'Caption must be of string type',
+            });
         async.waterfall([
             function verifyUsername(callback) {
                 const sql =
@@ -28,14 +31,17 @@ function createPost(username, serverLink, caption, private, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Username does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Username does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true);
                 });
@@ -49,8 +55,14 @@ function createPost(username, serverLink, caption, private, pool) {
                     [username, serverLink, caption, private],
                     (err, res) => {
                         return err
-                            ? resolve([false, 'Internal server error'])
-                            : resolve([true]);
+                            ? resolve({
+                                  success: false,
+                                  msg: 'Internal server error',
+                              })
+                            : resolve({
+                                  success: true,
+                                  msg: 'Post created',
+                              });
                     }
                 );
             },
@@ -65,10 +77,10 @@ function getPostsFromUser(username, pool) {
         username: username of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If user has posts, returns information of each post as objects in an array (i.e. [{'nysaifulislam@gmail.com', 'Saiful', 'Islam'}]). // TODO: Saiful, change this
-        If user has made no posts, returns [] (an empty array).
-        If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If there is another error, returns [false, 'Internal server error'].
+        If user has posts, returns information of each post as objects in an array (i.e. ). // TODO: Saiful, change this
+        If user has made no posts, returns { success: true, posts: [], msg: 'User has no posts' }.
+        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -79,14 +91,17 @@ function getPostsFromUser(username, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve(['Internal server error', err]);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Username does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Username does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true);
                 });
@@ -99,14 +114,25 @@ function getPostsFromUser(username, pool) {
                                 WHERE Username = $1 AND Deleted = false \
                                 ORDER BY UploadDate DESC'; // TODO: might not want to return username as well
                 pool.query(sql, [username], (err, res) => {
-                    if (err) return resolve([false, 'Internal server error']);
-                    if (res.rowCount === 0) return resolve([]);
-                    return resolve(res.rows);
+                    if (err)
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
+                    if (res.rowCount === 0)
+                        return resolve({
+                            success: true,
+                            posts: [],
+                            msg: 'User has no posts',
+                        });
+                    return resolve({ success: true, posts: res.rows });
                 });
             },
         ]);
     });
 }
+
+// TODO: check all resolves for object and no array
 
 function getPublicPosts(pool) {
     /* 
@@ -114,9 +140,9 @@ function getPublicPosts(pool) {
     Input:
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there are posts, returns information of each post as objects in an array (i.e. [{'nysaifulislam@gmail.com', 'Saiful', 'Islam'}]). // TODO: Saiful, change this
-        If there are no posts that are posted publically, returns [] (an empty array).
-        If there is an error, returns [false, 'Internal server error'].
+        If there are posts, returns information of each post as objects in an array (i.e. ). // TODO: Saiful, change this
+        If there are no posts that are posted publically, returns { success: true, posts: [], msg: 'No public posts'}.
+        If there is an error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         const sql =
@@ -125,9 +151,18 @@ function getPublicPosts(pool) {
                         WHERE Private = false AND Deleted = false \
                         ORDER BY UploadDate DESC'; // TODO: might not want to give Private
         pool.query(sql, (err, res) => {
-            if (err) return resolve([false, 'Internal server error']);
-            if (res.rowCount === 0) return resolve([]);
-            return resolve([res.rows]);
+            if (err)
+                return resolve({
+                    success: false,
+                    msg: 'Internal server error',
+                });
+            if (res.rowCount === 0)
+                return resolve({
+                    success: true,
+                    posts: [],
+                    msg: 'No public posts',
+                });
+            return resolve({ success: true, posts: res.rows });
         });
     });
 }
@@ -147,11 +182,11 @@ function viewPost(id, username, pool) {
         username: the user that wants to view the post [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns information of the post as an object in an array (i.e. [{'nysaifulislam@gmail.com', 'Saiful', 'Islam'}]). // TODO: Saiful, change this
-        If the user is not allowed to view the post due to privacy, returns [false, 'User not allowed to view post'].
-        If the id does not match a post or post is deleted, returns [false, 'Post does not exist'].
-        If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If there is another error, returns [false, 'Internal server error'].
+        If there is no error, returns information of the post as an object in an array (i.e. ). // TODO: Saiful, change this
+        If the user is not allowed to view the post due to privacy, returns { success: false, post: {}, msg: 'User not allowed to view post' }.
+        If the id does not match a post or post is deleted, returns { success: false, post: {}, msg: 'Post does not exist' }.
+        If username does not exist or has been deactivated, returns { success: false, post: {}, msg: 'Username does not exist or may be deactivated' }.
+        If there is another error, returns { success: false, post: {}, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -161,11 +196,17 @@ function viewPost(id, username, pool) {
                 pool.query(sql, [id], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false, '');
-                        return resolve([false, 'Post does not exist']);
+                        return resolve({
+                            success: false,
+                            msg: 'Post does not exist',
+                        });
                     }
                     callback(null, true, res.rows[0]);
                 });
@@ -177,14 +218,17 @@ function viewPost(id, username, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false, '');
-                        return resolve([
-                            false,
-                            'Username does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Username does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true, postInfo);
                 });
@@ -204,21 +248,24 @@ function viewPost(id, username, pool) {
                 pool.query(sql, [username, postInfo.username], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0 || res.rows[0].status === false) {
                         callback(null, false, '');
-                        return resolve([
-                            false,
-                            'User not allowed to view post',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'User not allowed to view post',
+                        });
                     }
                     callback(null, true, postInfo);
                 });
             },
             function execute(verification, postInfo) {
                 if (!verification) return;
-                return resolve([postInfo]);
+                return resolve({ success: true, post: postInfo });
             },
         ]);
     });
@@ -233,12 +280,12 @@ function setPostToPrivate(id, username, pool) {
         username: the user that wants to private the post [string] (for verifying they are privating one of their posts, not someone else's)
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns [true].
-        If post is already private, returns [false, 'Post already set to this privacy'].
-        If username is not the owner of the post, returns [false, "User not allowed to modify another user's post"].
-        If the id does not match a post or post is deleted, returns [false, 'Post does not exist'].
-        If account associated with username is deactivated, returns [false, "User's account is currently deactivated"].
-        If there is another error, returns [false, 'Internal server error'].
+        If there is no error, returns { success: true, msg: 'Post privacy set to private' }.
+        If post is already private, returns { success: true, msg: 'Post already set to private' }.
+        If username is not the owner of the post, returns { success: false, msg: "User not allowed to modify another user's post" }.
+        If the id does not match a post or post is deleted, returns { success: false, msg: 'Post does not exist' }.
+        If account associated with username is deactivated, returns { success: false, msg: "User's account is currently deactivated" }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -248,11 +295,17 @@ function setPostToPrivate(id, username, pool) {
                 pool.query(sql, [id], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false, '');
-                        return resolve([false, 'Post does not exist']);
+                        return resolve({
+                            success: false,
+                            msg: 'Post does not exist',
+                        });
                     }
                     callback(null, true, res.rows[0]);
                 });
@@ -262,10 +315,10 @@ function setPostToPrivate(id, username, pool) {
                 if (!verification) return;
                 if (postInfo.username !== username) {
                     callback(null, false, '');
-                    return resolve([
-                        false,
-                        "User not allowed to modify another user's post",
-                    ]);
+                    return resolve({
+                        success: false,
+                        msg: "User not allowed to modify another user's post",
+                    });
                 }
                 callback(null, true, postInfo);
             },
@@ -275,24 +328,30 @@ function setPostToPrivate(id, username, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rows[0].status === false) {
                         callback(null, false, '');
-                        return resolve([
-                            false,
-                            "User's account is currently deactivated",
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: "User's account is currently deactivated",
+                        });
                     }
                     callback(null, true, postInfo);
                 });
             },
-            function verifyPublic(verification, postInfo, callback) {
+            function verifyCurrPublic(verification, postInfo, callback) {
                 // TODO: repetition here and in other functions
                 if (!verification) return;
                 if (postInfo.private === true) {
                     callback(null, false);
-                    return resolve([false, 'Post already set to this privacy']);
+                    return resolve({
+                        success: true,
+                        msg: 'Post already set to private',
+                    });
                 }
                 callback(null, true);
             },
@@ -301,8 +360,14 @@ function setPostToPrivate(id, username, pool) {
                 const sql = 'UPDATE Post SET Private = true WHERE Id = $1';
                 pool.query(sql, [id], (err, res) => {
                     return err
-                        ? resolve([false, 'Internal server error'])
-                        : resolve([true]);
+                        ? resolve({
+                              success: false,
+                              msg: 'Internal server error',
+                          })
+                        : resolve({
+                              success: true,
+                              msg: 'Post privacy set to private',
+                          });
                 });
             },
         ]);
@@ -317,12 +382,12 @@ function setPostToPublic(id, username, pool) {
         username: the user that wants to set the post to public [string] (for verifying they are privating one of their posts, not someone else's)
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns [true].
-        If post is already public, returns [false, 'Post already set to this privacy'].
-        If username is not the owner of the post, returns [false, 'User not allowed to modify another user's post'].
-        If the id does not match a post or post is deleted, returns [false, 'Post does not exist'].
-        If account associated with username is deactivated, returns [false, "User's account is currently deactivated"].
-        If there is another error, returns [false, 'Internal server error'].
+        If there is no error, returns { success: true, msg: 'Post privacy set to public' }.
+        If post is already public, returns { success: true, msg: 'Post already set to public' }.
+        If username is not the owner of the post, returns { success: false, msg: "User not allowed to modify another user's post" }.
+        If the id does not match a post or post is deleted, returns { success: false, msg: 'Post does not exist' }.
+        If account associated with username is deactivated, returns { success: false, msg: "User's account is currently deactivated" }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -332,11 +397,17 @@ function setPostToPublic(id, username, pool) {
                 pool.query(sql, [id], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false, '');
-                        return resolve([false, 'Post does not exist']);
+                        return resolve({
+                            success: false,
+                            msg: 'Post does not exist',
+                        });
                     }
                     callback(null, true, res.rows[0]);
                 });
@@ -345,10 +416,10 @@ function setPostToPublic(id, username, pool) {
                 if (!verification) return;
                 if (postInfo.username !== username) {
                     callback(null, false, '');
-                    return resolve([
-                        false,
-                        "User not allowed to modify another user's post",
-                    ]);
+                    return resolve({
+                        success: false,
+                        msg: "User not allowed to modify another user's post",
+                    });
                 }
                 callback(null, true, postInfo);
             },
@@ -358,23 +429,29 @@ function setPostToPublic(id, username, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rows[0].status === false) {
                         callback(null, false, '');
-                        return resolve([
-                            false,
-                            "User's account is currently deactivated",
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: "User's account is currently deactivated",
+                        });
                     }
                     callback(null, true, postInfo);
                 });
             },
-            function verifyPrivate(verification, postInfo, callback) {
+            function verifyCurrPrivate(verification, postInfo, callback) {
                 if (!verification) return;
                 if (postInfo.private === false) {
                     callback(null, false);
-                    return resolve([false, 'Post already set to this privacy']);
+                    return resolve({
+                        success: true,
+                        msg: 'Post already set to public',
+                    });
                 }
                 callback(null, true);
             },
@@ -383,8 +460,14 @@ function setPostToPublic(id, username, pool) {
                 const sql = 'UPDATE Post SET Private = false WHERE Id = $1';
                 pool.query(sql, [id], (err, res) => {
                     return err
-                        ? resolve([false, 'Internal server error'])
-                        : resolve([true]);
+                        ? resolve({
+                              success: false,
+                              msg: 'Internal server error',
+                          })
+                        : resolve({
+                              success: true,
+                              msg: 'Post privacy set to public',
+                          });
                 });
             },
         ]);

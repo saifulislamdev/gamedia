@@ -11,10 +11,10 @@ function createLogin(username, password, email, firstName, lastName, pool) {
         lastName: last name of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns [true, 'Created successfully'].
-        If username is already taken by a user, returns [false, 'Username already taken'].
-        If email is already taken by a user, returns [false, 'Email already taken'].
-        If there is another error, returns [false, 'Internal server error'].
+        If there is no error, returns { success: true, msg: 'Created successfully' }.
+        If username is already taken by a user, returns { success: false, msg: 'Username already taken' }.
+        If email is already taken by a user, returns { success: false, msg: 'Email already taken' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -24,14 +24,24 @@ function createLogin(username, password, email, firstName, lastName, pool) {
                 pool.query(sql, [username, email], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount !== 0) {
                         const result = res.rows[0];
                         callback(null, false);
                         if (username === result.username)
-                            return resolve([false, 'Username already taken']);
-                        else return resolve([false, 'Email already taken']);
+                            return resolve({
+                                success: false,
+                                msg: 'Username already taken',
+                            });
+                        else
+                            return resolve({
+                                success: false,
+                                msg: 'Email already taken',
+                            });
                     }
                     callback(null, true);
                 });
@@ -44,8 +54,14 @@ function createLogin(username, password, email, firstName, lastName, pool) {
                     [username, password, email, firstName, lastName],
                     (err, res) => {
                         return err
-                            ? resolve([false, 'Internal server error'])
-                            : resolve([true, 'Created successfully']);
+                            ? resolve({
+                                  success: false,
+                                  msg: 'Internal server error',
+                              })
+                            : resolve({
+                                  success: true,
+                                  msg: 'Created successfully',
+                              });
                     }
                 );
             },
@@ -61,17 +77,22 @@ function verifyLogin(username, password, pool) {
         password: password of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If the user exists, returns [true, 'Valid login'].
-        If no such user exists, returns [false, 'Invalid credentials'].
-        If there is another error, returns [false, 'Internal server error']).
+        If the user exists, returns { success: true, msg: 'Valid login' }.
+        If no such user exists, returns { success: false, msg: 'Invalid credentials' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }).
     */
     return new Promise((resolve, reject) => {
         const sql =
             'SELECT Username, Password FROM Login WHERE Username = $1 AND Password = $2';
         pool.query(sql, [username, password], (err, res) => {
-            if (err) return resolve([false, 'Internal server error']);
-            if (res.rowCount === 0) return resolve([false, 'Invalid credentials']);
-            return resolve([true, 'Valid login']);
+            if (err)
+                return resolve({
+                    success: false,
+                    msg: 'Internal server error',
+                });
+            if (res.rowCount === 0)
+                return resolve({ success: false, msg: 'Invalid credentials' });
+            return resolve({ success: true, msg: 'Valid login' });
         });
     });
 }
@@ -85,6 +106,5 @@ function updateEmail() {} // TODO: not needed for now but nice to have
 function updateName() {} // TODO: not needed for now but nice to have
 
 function deactivateLogin() {} // TODO: not needed for now but nice to have
-
 
 module.exports = { createLogin, verifyLogin };

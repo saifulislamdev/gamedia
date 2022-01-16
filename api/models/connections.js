@@ -8,11 +8,11 @@ function follow(follower, following, pool) {
         following: username of user that the follower wants to follow (the user being followed) [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If follow is made, returns [true].
-        If follower does not exist or has been deactivated, returns [false, 'Follower does not exist or may be deactivated'].
-        If following does not exist or has been deactivated, returns [false, 'Following does not exist or may be deactivated'].
-        If follower is following the user already, returns [false, 'Already following'].
-        If there is another error, returns [false, 'Internal server error'].
+        If follow is made, returns { success: true, msg: `${follower} is now following ${following}` }.
+        If follower does not exist or has been deactivated, returns { success: false, msg: 'Follower does not exist or may be deactivated' }.
+        If following does not exist or has been deactivated, returns { success: false, msg: 'Following does not exist or may be deactivated' }.
+        If follower is following the user already, returns { success: false, msg: 'Already following' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     // TODO: Saiful, add a check so that they aren't following themselves (either in table, code, or both)
     return new Promise((resolve, reject) => {
@@ -23,14 +23,17 @@ function follow(follower, following, pool) {
                 pool.query(sql, [follower], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Follower does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Follower does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true);
                 });
@@ -43,14 +46,17 @@ function follow(follower, following, pool) {
                 pool.query(sql, [following], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Following does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Following does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true);
                 });
@@ -62,11 +68,17 @@ function follow(follower, following, pool) {
                 pool.query(sql, [follower, following], (err, res) => {
                     if (err) {
                         callback(null, false, '');
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount !== 0 && res.rows[0].status !== false) {
                         callback(null, false, '');
-                        return resolve([false, 'Already following']);
+                        return resolve({
+                            success: false,
+                            msg: 'Already following',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, true, false);
@@ -87,8 +99,14 @@ function follow(follower, following, pool) {
                 }
                 pool.query(sql, [follower, following], (err, res) => {
                     return err
-                        ? resolve([false, 'Internal server error'])
-                        : resolve([true]);
+                        ? resolve({
+                              success: false,
+                              msg: 'Internal server error',
+                          })
+                        : resolve({
+                              success: true,
+                              msg: `${follower} is now following ${following}`,
+                          });
                 });
             },
         ]);
@@ -97,15 +115,15 @@ function follow(follower, following, pool) {
 
 function getMyFollowers(username, pool) {
     /* 
-    Purpose: Shows all the users that is following someone in the order they started following the user (from newest to oldest)
+    Purpose: Shows all the users that is following a user in the order they started following the user (from newest to oldest)
     Input:
         username: username of the user being followed  [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
         If there is no error, returns each username as objects in an array (i.e. ) // TODO: Saiful, change this
-        If no one is following the user, returns [] (an empty array).
-        If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If there is another error, returns [false, 'Internal server error'].
+        If no one is following the user, returns { success: true, followers: [], msg: `No one is following ${username}` }.
+        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -116,14 +134,17 @@ function getMyFollowers(username, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Username does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Username does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true);
                 });
@@ -137,9 +158,18 @@ function getMyFollowers(username, pool) {
                                 WHERE Following = $1 AND Login.Status = true AND Follow.Status = true\
                                 ORDER BY Date DESC';
                 pool.query(sql, [username], (err, res) => {
-                    if (err) return resolve([false, 'Internal server error']);
-                    if (res.rowCount === 0) return resolve([]);
-                    return resolve(res.rows);
+                    if (err)
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
+                    if (res.rowCount === 0)
+                        return resolve({
+                            success: true,
+                            followers: [],
+                            msg: `No one is following ${username}`,
+                        });
+                    return resolve({ success: true, followers: res.rows });
                 });
             },
         ]);
@@ -154,9 +184,9 @@ function getMyFollowing(username, pool) {
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
         If there is no error, returns each username as objects in an array (i.e. ) // TODO: Saiful, change this
-        If the user is not following anyone returns [] (an empty array).
-        If username does not exist or has been deactivated, returns [false, 'Username does not exist or may be deactivated'].
-        If there is another error, returns [false, 'Internal server error'].
+        If the user is not following anyone returns { success: true, following: [], msg: `${username} is not following anyone` }.
+        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -167,14 +197,17 @@ function getMyFollowing(username, pool) {
                 pool.query(sql, [username], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Username does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: 'Username does not exist or may be deactivated',
+                        });
                     }
                     callback(null, true);
                 });
@@ -188,9 +221,18 @@ function getMyFollowing(username, pool) {
                                 WHERE Follower = $1 AND Login.Status = true AND Follow.Status = true \
                                 ORDER BY Date DESC';
                 pool.query(sql, [username], (err, res) => {
-                    if (err) return resolve([false, 'Internal server error']);
-                    if (res.rowCount === 0) return resolve([]);
-                    return resolve(res.rows);
+                    if (err)
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
+                    if (res.rowCount === 0)
+                        return resolve({
+                            success: true,
+                            following: [],
+                            msg: `${username} is not following anyone`,
+                        });
+                    return resolve({ success: true, following: res.rows });
                 });
             },
         ]);
@@ -205,20 +247,28 @@ function getFollowingStatus(follower, following, pool) {
         following: username of user that may be being followed [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If the follower is following the following, returns [true].
-        If follower does not exist or has been deactivated, returns [false, 'Not following'].
-        If following does not exist or has been deactivated, returns [false, 'Not following'].
-        If follower is not following the user, returns [false, 'Not following'].
-        If there is another error, returns [false, 'Internal server error'].
+        If the follower is following the following, returns { success: true, isFollowing: true }.
+        If follower is not following the user, returns { success: true, isFollowing: false }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         const sql =
             'SELECT Status FROM Follow WHERE Follower = $1 AND Following = $2';
         pool.query(sql, [follower, following], (err, res) => {
-            if (err) return resolve([false, 'Internal server error']);
+            if (err)
+                return resolve({
+                    success: false,
+                    msg: 'Internal server error',
+                });
             if (res.rowCount === 0 || res.rows[0].status === false)
-                return resolve([false, 'Not following']);
-            return resolve([true]);
+                return resolve({
+                    success: true,
+                    isFollowing: false,
+                });
+            return resolve({
+                success: true,
+                isFollowing: true,
+            });
         });
     });
 }
@@ -231,11 +281,11 @@ function unfollow(follower, following, pool) {
         following: username of user that the follower wants to unfollow (the user being unfollowed) [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If unfollow is made, returns [true].
-        If follower does not exist or has been deactivated, returns [false, 'Follower does not exist or may be deactivated'].
-        If following does not exist or has been deactivated, returns [false, 'Following does not exist or may be deactivated'].
-        If follower is not following the user already, returns [false, 'Not following'].
-        If there is another error, returns [false, 'Internal server error'].
+        If unfollow is made, returns { success: true, msg: `${follower} is not following ${following} anymore` }.
+        If follower does not exist or has been deactivated, returns { success: false, msg: `${follower} does not exist or may be deactivated` }.
+        If following does not exist or has been deactivated, returns { success: false, msg: `${following} does not exist or may be deactivated` }.
+        If follower is not following the user already, returns { success: false, msg: 'Already not following' }.
+        If there is another error, returns { success: false, msg: 'Internal server error' }.
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -246,14 +296,17 @@ function unfollow(follower, following, pool) {
                 pool.query(sql, [follower], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Follower does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: `${follower} does not exist or may be deactivated`,
+                        });
                     }
                     callback(null, true);
                 });
@@ -266,14 +319,17 @@ function unfollow(follower, following, pool) {
                 pool.query(sql, [following], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0) {
                         callback(null, false);
-                        return resolve([
-                            false,
-                            'Following does not exist or may be deactivated',
-                        ]);
+                        return resolve({
+                            success: false,
+                            msg: `${following} does not exist or may be deactivated`,
+                        });
                     }
                     callback(null, true);
                 });
@@ -286,11 +342,17 @@ function unfollow(follower, following, pool) {
                 pool.query(sql, [follower, following], (err, res) => {
                     if (err) {
                         callback(null, false);
-                        return resolve([false, 'Internal server error']);
+                        return resolve({
+                            success: false,
+                            msg: 'Internal server error',
+                        });
                     }
                     if (res.rowCount === 0 || res.rows[0].status === false) {
                         callback(null, false);
-                        return resolve([false, 'Not following']);
+                        return resolve({
+                            success: false,
+                            msg: 'Already not following',
+                        });
                     }
                     callback(null, true);
                 });
@@ -301,8 +363,14 @@ function unfollow(follower, following, pool) {
                     'UPDATE Follow SET Status = false WHERE Follower = $1 AND Following = $2'; // TODO: error check this for the date update
                 pool.query(sql, [follower, following], (err, res) => {
                     return err
-                        ? resolve([false, 'Internal server error'])
-                        : resolve([true]);
+                        ? resolve({
+                              success: false,
+                              msg: 'Internal server error',
+                          })
+                        : resolve({
+                              success: true,
+                              msg: `${follower} is not following ${following} anymore`,
+                          });
                 });
             },
         ]);
@@ -346,3 +414,11 @@ function unfollow(follower, following, pool) {
 // unfollow('saifulislam', 'ronnycoste', pool).then(result => console.log(result));
 // unfollow('saifulisla', 'ctp', pool).then(result => console.log(result));
 // unfollow('ronnycoste', 'ctp', pool).then(result => console.log(result));
+
+module.exports = {
+    follow,
+    getMyFollowers,
+    getMyFollowing,
+    getFollowingStatus,
+    unfollow,
+};

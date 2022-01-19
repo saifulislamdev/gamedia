@@ -5,9 +5,9 @@ function getAccountInfo(username, pool) {
         username: username of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns the email, first name, and last name of the user as an object (i.e. { success: true, accountInfo: {'nysaifulislam@gmail.com', 'Saiful', 'Islam'} } ). // TODO: update this
-        If no such user exists with the username, returns { success: false, msg: 'No such user exists' }.
-        If there is an error, returns { success: false, msg: 'Internal server error' }.
+        If there is no error, returns a key-value pair in an object where the key is "accountInfo" and the value is information of the account as an object (email, first name, and last name of the user)
+        If no such user exists with the username, returns { success: false, msg: 'No such user exists' }
+        If there is an error, returns { success: false, msg: 'Internal server error' }
     */
     return new Promise((resolve, reject) => {
         const sql =
@@ -23,13 +23,9 @@ function getAccountInfo(username, pool) {
                     success: false,
                     msg: 'No such user exists',
                 });
-            return resolve({ success: true, accountInfo: res.rows[0] }); // TODO: see what accountInfo looks like
+            return resolve({ success: true, accountInfo: res.rows[0] });
         });
     });
 }
-
-// getAccountInfo('saifulislam', pool).then(result => console.log(result));
-// getAccountInfo('ronnycoste', pool).then(result => console.log(result));
-// getAccountInfo('lol', pool).then(result => console.log(result));
 
 module.exports = { getAccountInfo };

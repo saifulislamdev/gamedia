@@ -8,13 +8,13 @@ function follow(follower, following, pool) {
         following: username of user that the follower wants to follow (the user being followed) [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If follow is made, returns { success: true, msg: `${follower} is now following ${following}` }.
-        If follower does not exist or has been deactivated, returns { success: false, msg: 'Follower does not exist or may be deactivated' }.
-        If following does not exist or has been deactivated, returns { success: false, msg: 'Following does not exist or may be deactivated' }.
-        If follower is following the user already, returns { success: false, msg: 'Already following' }.
-        If there is another error, returns { success: false, msg: 'Internal server error' }.
+        If follow is made, returns { success: true, msg: `${follower} is now following ${following}` }
+        If follower does not exist or has been deactivated, returns { success: false, msg: 'Follower does not exist or may be deactivated' }
+        If following does not exist or has been deactivated, returns { success: false, msg: 'Following does not exist or may be deactivated' }
+        If follower is following the user already, returns { success: false, msg: 'Already following' }
+        If there is another error, returns { success: false, msg: 'Internal server error' }
     */
-    // TODO: Saiful, add a check so that they aren't following themselves (either in table, code, or both)
+    // TODO: Add a check so that they aren't requesting to follow themselves (either in table, code, or both)
     return new Promise((resolve, reject) => {
         async.waterfall([
             function verifyFollower(callback) {
@@ -117,13 +117,13 @@ function getMyFollowers(username, pool) {
     /* 
     Purpose: Shows all the users that is following a user in the order they started following the user (from newest to oldest)
     Input:
-        username: username of the user being followed  [string]
+        username: username of the user being followed [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns each username as objects in an array (i.e. ) // TODO: Saiful, change this
-        If no one is following the user, returns { success: true, followers: [], msg: `No one is following ${username}` }.
-        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }.
-        If there is another error, returns { success: false, msg: 'Internal server error' }.
+        If there is no error, returns followers in an array of strings
+        If no one is following the user, returns { success: true, followers: [], msg: `No one is following ${username}` }
+        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }
+        If there is another error, returns { success: false, msg: 'Internal server error' }
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -187,10 +187,10 @@ function getMyFollowing(username, pool) {
         username: username of the user who is following other users [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns each username as objects in an array (i.e. ) // TODO: Saiful, change this
-        If the user is not following anyone returns { success: true, following: [], msg: `${username} is not following anyone` }.
-        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }.
-        If there is another error, returns { success: false, msg: 'Internal server error' }.
+        If there is no error, returns following in an array of strings
+        If the user is not following anyone returns { success: true, following: [], msg: `${username} is not following anyone` }
+        If username does not exist or has been deactivated, returns { success: false, msg: 'Username does not exist or may be deactivated' }
+        If there is another error, returns { success: false, msg: 'Internal server error' }
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -383,44 +383,6 @@ function unfollow(follower, following, pool) {
         ]);
     });
 }
-
-/* Testing */
-
-// follow('saifulislam', 'ctp', pool).then(result => console.log(result));
-// follow('saifulislam', 'ctp', pool).then(result => console.log(result));
-// follow('saifulislam', 'ct', pool).then(result => console.log(result));
-// follow('saifulislam', 'ronnycoste', pool).then(result => console.log(result));
-// follow('saifulisla', 'ctp', pool).then(result => console.log(result));
-// follow('ronnycoste', 'ctp', pool).then(result => console.log(result));
-// follow('saifulislam', 'ctp', pool).then(result => console.log(result)); // unfollowed
-
-// getMyFollowers('saifulislam', pool).then(result => console.log(result));
-// getMyFollowers('saifulisla', pool).then(result => console.log(result));
-// getMyFollowers('ronnycoste', pool).then(result => console.log(result));
-// getMyFollowers('gamedia', pool).then(result => console.log(result));
-// getMyFollowers('ctp', pool).then(result => console.log(result));
-
-// getMyFollowing('saifulislam', pool).then(result => console.log(result));
-// getMyFollowing('saifulisla', pool).then(result => console.log(result));
-// getMyFollowing('ronnycoste', pool).then(result => console.log(result));
-// getMyFollowing('ctp', pool).then(result => console.log(result));
-// getMyFollowing('gamedia', pool).then(result => console.log(result));
-// getMyFollowing('saifulislam', pool).then(result => console.log(result)); // not following
-
-// getFollowingStatus('saifulislam', 'ctp', pool).then(result => console.log(result));
-// getFollowingStatus('saifulisla', 'ctp', pool).then(result => console.log(result));
-// getFollowingStatus('saifulisla', 'ct', pool).then(result => console.log(result));
-// getFollowingStatus('saifulislam', 'ronnycoste', pool).then(result => console.log(result));
-// getFollowingStatus('gamedia', 'saifulislam', pool).then(result => console.log(result));
-// getFollowingStatus('ronnycoste', 'ctp', pool).then(result => console.log(result));
-
-// unfollow('saifulislam', 'ctp', pool).then(result => console.log(result));
-// unfollow('saifulislam', 'ctp', pool).then(result => console.log(result));
-// unfollow('gamedia', 'ctp', pool).then(result => console.log(result));
-// unfollow('saifulislam', 'ct', pool).then(result => console.log(result));
-// unfollow('saifulislam', 'ronnycoste', pool).then(result => console.log(result));
-// unfollow('saifulisla', 'ctp', pool).then(result => console.log(result));
-// unfollow('ronnycoste', 'ctp', pool).then(result => console.log(result));
 
 module.exports = {
     follow,

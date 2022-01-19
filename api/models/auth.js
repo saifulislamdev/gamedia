@@ -11,10 +11,10 @@ function createLogin(username, password, email, firstName, lastName, pool) {
         lastName: last name of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If there is no error, returns { success: true, msg: 'Created successfully' }.
-        If username is already taken by a user, returns { success: false, msg: 'Username already taken' }.
-        If email is already taken by a user, returns { success: false, msg: 'Email already taken' }.
-        If there is another error, returns { success: false, msg: 'Internal server error' }.
+        If there is no error, returns { success: true, msg: 'Created successfully' }
+        If username is already taken by a user, returns { success: false, msg: 'Username already taken' }
+        If email is already taken by a user, returns { success: false, msg: 'Email already taken' }
+        If there is another error, returns { success: false, msg: 'Internal server error' }
     */
     return new Promise((resolve, reject) => {
         async.waterfall([
@@ -77,9 +77,9 @@ function verifyLogin(username, password, pool) {
         password: password of user [string]
         pool: pool to DB (result of pg.Pool() method in index.js)
     Output: [Promise]
-        If the user exists, returns { success: true, msg: 'Valid login' }.
-        If no such user exists, returns { success: false, msg: 'Invalid credentials' }.
-        If there is another error, returns { success: false, msg: 'Internal server error' }).
+        If the user exists, returns { success: true, msg: 'Valid login' }
+        If no such user exists, returns { success: false, msg: 'Invalid credentials' }
+        If there is another error, returns { success: false, msg: 'Internal server error' }
     */
     return new Promise((resolve, reject) => {
         const sql =

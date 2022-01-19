@@ -1,16 +1,15 @@
 // This file is for inserting mock data into the database tables
-// Tables must be setup first (./db-setup.js)
+// Tables must be setup first (./setup.js)
 
 const express = require('express');
-const app = express();
 
-const follow = require('./follow');
-const login = require('./login');
+const auth = require('./auth');
+const connections = require('./connections');
 const pool = require('./');
 const post = require('./post');
 
 async function seed() {
-    const res1 = await login.createLogin(
+    const res1 = await auth.createLogin(
         'saifulislam',
         'ronnyisacoolguy',
         'nysaifulislam@gmail.com',
@@ -18,7 +17,7 @@ async function seed() {
         'Islam',
         pool
     );
-    const res2 = await login.createLogin(
+    const res2 = await auth.createLogin(
         'ronnycoste',
         'saifulisacoolguy',
         'ronny21.97@gmail.com',
@@ -26,7 +25,7 @@ async function seed() {
         'Coste',
         pool
     );
-    const res3 = await login.createLogin(
+    const res3 = await auth.createLogin(
         'gamedia',
         'saifulandronny',
         'gamedia@gmail.com',
@@ -34,7 +33,7 @@ async function seed() {
         '',
         pool
     );
-    const res4 = await login.createLogin(
+    const res4 = await auth.createLogin(
         'ctp',
         'saifulandronnyarethebest',
         'cunytechprep@gmail.com',
@@ -63,17 +62,17 @@ async function seed() {
         false,
         pool
     );
-    const res8 = await follow.follow('saifulislam', 'ctp', pool);
-    const res9 = await follow.follow('saifulislam', 'gamedia', pool);
-    const res10 = await follow.follow('saifulislam', 'ronnycoste', pool);
-    const res11 = await follow.follow('ronnycoste', 'ctp', pool);
-    const res12 = await follow.follow('ronnycoste', 'gamedia', pool);
-    const res13 = await follow.follow('ronnycoste', 'saifulislam', pool);
-    const res14 = await follow.follow('ctp', 'saifulislam', pool);
-    const res15 = await follow.follow('ctp', 'ronnycoste', pool);
-    const res16 = await follow.follow('gamedia', 'saifulislam', pool);
-    const res17 = await follow.follow('gamedia', 'ronnycoste', pool);
-    const res18 = await follow.follow('gamedia', 'ctp', pool);
+    const res8 = await connections.follow('saifulislam', 'ctp', pool);
+    const res9 = await connections.follow('saifulislam', 'gamedia', pool);
+    const res10 = await connections.follow('saifulislam', 'ronnycoste', pool);
+    const res11 = await connections.follow('ronnycoste', 'ctp', pool);
+    const res12 = await connections.follow('ronnycoste', 'gamedia', pool);
+    const res13 = await connections.follow('ronnycoste', 'saifulislam', pool);
+    const res14 = await connections.follow('ctp', 'saifulislam', pool);
+    const res15 = await connections.follow('ctp', 'ronnycoste', pool);
+    const res16 = await connections.follow('gamedia', 'saifulislam', pool);
+    const res17 = await connections.follow('gamedia', 'ronnycoste', pool);
+    const res18 = await connections.follow('gamedia', 'ctp', pool);
 }
 
 // inserts mock data

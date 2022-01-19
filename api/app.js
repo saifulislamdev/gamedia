@@ -30,11 +30,13 @@ const PORT = process.env.PORT;
 if (PORT) {
     app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 } else {
-    console.log('===== ERROR ====\nCREATE A .env FILE!\n===== /ERROR ====');
+    console.log('Create a .env and provide PORT first!');
 }
 
 // connect to DB
 dbPool.query('SELECT NOW()', (err, res) => {
-    if (err) console.log(err);
-    else console.log('Database connected');
+    if (err) {
+        console.log('Error setting up the database!\n');
+        console.log(err);
+    } else console.log('Database connected');
 });

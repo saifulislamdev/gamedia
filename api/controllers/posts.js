@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const {
     createPost,
     getPublicPosts,
@@ -9,18 +10,17 @@ const {
 } = require('../models/post');
 const dbPool = require('../models');
 
-// TODO: testing for all of /api/controllers
-
 router.get('/', async (req, res) => {
     const getPublicPostsRes = await getPublicPosts(dbPool);
     const { success, posts, msg } = getPublicPostsRes;
 
-    // no posts or posts exist
-    if (success) res.status(200).json({ posts: posts });
-    else
-        res.status(500).json({
-            msg: msg,
-        });
+    // posts may or may not exist
+    if (success) return res.status(200).json({ posts: posts });
+
+    // server error
+    res.status(500).json({
+        msg: msg,
+    });
 });
 
 router.post('/', async (req, res) => {
@@ -32,6 +32,7 @@ router.post('/', async (req, res) => {
         typeof serverLink === 'undefined' ||
         typeof private === 'undefined'
     )
+        // TODO: there may be a better way of writing this
         return res.status(400).json({
             msg: 'Username, server link, or privacy setting not indicated',
         });
@@ -62,7 +63,7 @@ router.post('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
-    const { username } = req.body; // user that is requesting to view the post (~sensitive)
+    const { username } = req.body; // user that is requesting to view the post (~sensitive info)
 
     // username needs to be passed in through body
     if (typeof username === 'undefined')
@@ -91,6 +92,7 @@ router.put('/:id', async (req, res) => {
 
     // username and privacy setting need to be passed in through body
     if (typeof username === 'undefined' || typeof private === 'undefined')
+        // TODO: there may be a better way of writing this
         return res.status(400).json({
             msg: 'Username or privacy setting not indicated',
         });

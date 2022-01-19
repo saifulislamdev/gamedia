@@ -1,11 +1,11 @@
 {
-  "name": "api-backend",
+  "name": "gamedia",
   "version": "1.0.0",
-  "description": "Gamedia API Backend",
+  "description": "A social media site for gamers",
   "main": "api/app.js",
   "scripts": {
     "start": "node api/app.js",
-    "dev": "nodemon -r dotenv/config api/app.js",
+    "dev": "nodemon api/app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cd client && npm install && npm run build"
   },
@@ -20,9 +20,7 @@
     "pg-hstore": "^2.3.3",
     "react-bootstrap": "^1.5.2",
     "react-icons": "^4.2.0",
-    "react-pro-sidebar": "^0.6.0",
-    "sequelize": "^5.22.3",
-    "sqlite3": "^4.2.0"
+    "react-pro-sidebar": "^0.6.0"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",

@@ -2,14 +2,12 @@ const express = require('express');
 const router = express.Router();
 const {
     follow,
+    getFollowingStatus,
     getMyFollowers,
     getMyFollowing,
-    getFollowingStatus,
     unfollow,
 } = require('../models/connections');
 const dbPool = require('../models');
-
-// TODO: here now (complete all routes)
 
 router.get('/followers/:username', async (req, res) => {
     const { username } = req.params;
@@ -58,9 +56,9 @@ router.post('/follower/:follower/following/:following', async (req, res) => {
     const { follower, following } = req.params;
 
     const followRes = await follow(follower, following, dbPool);
-    const { success, msg } = followRes; // TODO: do destructuring everywhere
+    const { success, msg } = followRes;
 
-    if (success) return res.status(201).json({ msg: msg });
+    if (success) return res.status(204).json();
 
     if (msg === 'Internal server error')
         return res.status(500).json({ msg: msg });

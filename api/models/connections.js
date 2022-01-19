@@ -169,7 +169,11 @@ function getMyFollowers(username, pool) {
                             followers: [],
                             msg: `No one is following ${username}`,
                         });
-                    return resolve({ success: true, followers: res.rows });
+                    const followers = res.rows.map((object) => object.follower); // flattening array of objects into a simple array of strings
+                    return resolve({
+                        success: true,
+                        followers: followers,
+                    });
                 });
             },
         ]);
@@ -232,7 +236,10 @@ function getMyFollowing(username, pool) {
                             following: [],
                             msg: `${username} is not following anyone`,
                         });
-                    return resolve({ success: true, following: res.rows });
+                    const following = res.rows.map(
+                        (object) => object.following
+                    ); // flattening array of objects into a simple array of strings
+                    return resolve({ success: true, following: following });
                 });
             },
         ]);

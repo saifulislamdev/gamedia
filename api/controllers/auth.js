@@ -12,11 +12,11 @@ router.get('/', async (req, res) => {
         });
 
     const verifyLoginRes = await verifyLogin(username, password, dbPool);
+    const { success, msg } = verifyLoginRes;
 
-    if (verifyLoginRes.success)
-        return res.status(200).json({ msg: verifyLoginRes.msg }); // successful
+    if (success) return res.status(200).json({ msg: msg }); // successful
 
-    res.status(400).json({ msg: verifyLoginRes.msg }); // not successful
+    res.status(400).json({ msg: msg }); // not successful
 });
 
 router.post('/', async (req, res) => {
@@ -39,11 +39,11 @@ router.post('/', async (req, res) => {
         lastName,
         dbPool
     );
+    const { success, msg } = createLoginRes;
 
-    if (createLoginRes.success)
-        return res.status(201).json({ msg: createLoginRes.msg }); // successful
+    if (success) return res.status(201).json({ msg: msg }); // successful
 
-    res.status(400).json({ msg: createLoginRes.msg }); // not successful
+    res.status(400).json({ msg: msg }); // not successful
 });
 
 module.exports = router;

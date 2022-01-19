@@ -9,7 +9,7 @@ const {
 } = require('../models/post');
 const dbPool = require('../models');
 
-// TODO: destructuring and testing for all of /api/controllers
+// TODO: testing for all of /api/controllers
 
 router.get('/', async (req, res) => {
     const getPublicPostsRes = await getPublicPosts(dbPool);

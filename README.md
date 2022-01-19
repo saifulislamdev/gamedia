@@ -6,22 +6,30 @@ Social media site for gamers built using React, Node.js, Express.js, and Postgre
 
 1. Install [Node.js](https://nodejs.org/en/) (if you haven't already)
 2. Install [Postgres](https://github.com/CUNYTechPrep/ctp2019/blob/master/guides/installing-postgresql.md) (if you haven't already)
-3. Create a user in postgres named `ctp_user` with the password `ctp_pass`
+3. Clone this app
 
 ```bash
-createuser -P -s -e ctp_user
+git clone https://github.com/saifulislamny/gamedia
 ```
 
-4. Create a postgres DB
+4. Create a .env file in resulting folder
 
 ```bash
-createdb -h localhost -U ctp_user Gamedia
+cd gamedia/
+touch .env
 ```
 
-5. Clone this app
+5. Provide environment variables in .env (example values are shown below - feel free to have different values)
 
-```bash
-git clone https://github.com/saifulislamny/Gamedia
+```
+# Port Number for API
+PORT=5000
+
+# Database config
+DB_USERNAME=ctp_user
+DB_PASSWORD=ctp_pass
+DB_DATABASE=Gamedia
+DB_HOST=127.0.0.1
 ```
 
 ## Running the app
@@ -31,7 +39,6 @@ For local development you will need two terminals open, one for the API and anot
 1. Backend terminal
 
 ```bash
-cp .env.example .env
 npm install
 npm run dev
 ```
@@ -39,12 +46,19 @@ npm run dev
 2. Frontend terminal
 
 ```bash
-cd client
+cd client/
 npm install
 npm start
 ```
 
-3. Go to <http://localhost:8080> for backend
-4. Go to <http://localhost:3000> for frontend
+3. Go to <http://localhost:PORT> for viewing the backend (e.g. <http://localhost:5000> if you specified the PORT to be 5000 in your .env file)
+4. Go to <http://localhost:3000> for viewing the frontend
 
 In production, only a single app is deployed. The react client will build into static files that will be served from the backend.
+
+## Improvements
+
+### Backend
+
+- More readable code in `/api/models/`
+- Address TODO comments

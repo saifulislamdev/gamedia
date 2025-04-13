@@ -9,7 +9,7 @@ Social media site for gamers built using React, Node.js, Express.js, and Postgre
 3. Clone this app
 
 ```bash
-git clone https://github.com/saifulislamny/gamedia
+git clone https://github.com/saifulislamdev/gamedia
 ```
 
 4. Create a .env file in resulting folder
